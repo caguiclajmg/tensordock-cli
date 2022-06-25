@@ -14,13 +14,15 @@ go build
 
 ## Usage
 
+Add `--help` to any command to get contextual help
+
 ### Configuration
 
 ```
-$ tensordock-cli config --apiKey <YOUR_API_KEY> --apiToken <YOUR_API_TOKEN> [--serviceUrl <SERVICE_URL>]
+$ tensordock-cli config --apiKey api_key --apiToken api_token [--serviceUrl service_url]
 ```
 
-Note: Go to https://console.tensordock.com/api to get your API key and token
+Go to https://console.tensordock.com/api to get your API key and token
 
 Credentials may also be specified inline with every command using the `--apiKey` and `--apiToken` flags
 
@@ -33,43 +35,43 @@ $ tensordock-cli servers list
 ### Get server info
 
 ```sh
-$ tensordock-cli servers info SERVER_ID
+$ tensordock-cli servers info server_id
 ```
 
 ### Start/Stop server
 
 ```sh
-$ tensordock-cli servers start|stop SERVER_ID
+$ tensordock-cli servers start|stop server_id
 ```
 
 ### Delete server
 
 ```sh
-$ tensordock-cli servers delete SERVER_ID
+$ tensordock-cli servers delete server_id
 ```
 
 ### Open management dashboard in browser
 
 ```sh
-$ tensordock-cli servers manage SERVER_ID
+$ tensordock-cli servers manage server_id
 ```
 
 ### Deploy server
 
 ```sh
 $ tensordock-cli servers deploy \
-    [--gpuModel GPU_MODEL \]
-    [--location LOCATION \]
-    [--instanceType INSTANCE_TYPE \]
-    [--gpuCount GPU_COUNT \]
-    [--vcpus VCPUS \]
-    [--storage STORAGE \]
-    [--storageClass STORAGE_CLASS \]
-    [--ram RAM \]
-    [--os OS \]
-    NAME \
-    ADMIN_USER \
-    ADMIN_PASS
+    [--gpuModel gpu_model \]
+    [--location location \]
+    [--instanceType instance_type \]
+    [--gpuCount gpu_count \]
+    [--vcpus vcpus \]
+    [--storage storage \]
+    [--storageClass storage_class \]
+    [--ram ram \]
+    [--os os \]
+    name \
+    admin_user \
+    admin_pass
 ```
 
 ### Get billing info
