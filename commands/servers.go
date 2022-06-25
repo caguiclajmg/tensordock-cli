@@ -3,9 +3,10 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"log"
-	"reflect"
+	"os"
+	"strconv"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 )
@@ -105,9 +106,13 @@ func serverList(cmd *cobra.Command, args []string) error {
 		return errors.New("api call failed")
 	}
 
-	for key, elem := range res.Servers {
-		fmt.Printf("%v (%v)\n", key, elem.Name)
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Id", "Name", "Location", "Status"})
+	for _, elem := range res.Servers {
+		t.AppendRow(table.Row{elem.Id, elem.Name, elem.Location, elem.Status})
 	}
+	t.Render()
 
 	return nil
 }
@@ -127,53 +132,34 @@ func serverInfo(cmd *cobra.Command, args []string) error {
 		return errors.New("api call failed")
 	}
 
-	if len(args) >= 2 {
-		prop := args[1]
-		val := reflect.ValueOf(res.Server)
-		field := reflect.Indirect(val).FieldByName(prop)
-		if field == (reflect.Value{}) {
-			log.Fatalf("error: property %v not found", prop)
-		}
-
-		fmt.Printf("%v", field)
-	} else {
-		fmt.Printf(`Id: %v
-Name: %v
-Cost (Charged): %v 
-Cost (Hour On): %v
-Cost (Minutes On): %v
-Cost (Hour Off): %v
-Cost (Minutes Off): %v
-CPU Model: %v
-GPU Count: %v
-GPU Model: %v
-IP: %v
-Location: %v
-RAM: %v
-Status: %v
-Storage: %v
-Storage Class: %v
-Type: %v
-vCPUs: %v`,
-			res.Server.Id,
-			res.Server.Name,
-			res.Server.Cost.Charged,
-			res.Server.Cost.HourOn,
-			res.Server.Cost.MinutesOn,
-			res.Server.Cost.HourOff,
-			res.Server.Cost.MinutesOff,
-			res.Server.CPUModel,
-			res.Server.GPUCount,
-			res.Server.GPUModel,
-			res.Server.Ip,
-			res.Server.Location,
-			res.Server.Ram,
-			res.Server.Status,
-			res.Server.Storage,
-			res.Server.StorageClass,
-			res.Server.Type,
-			res.Server.VCPUs)
+	props := []map[string]string{
+		{"name": "ID", "value": res.Server.Id},
+		{"name": "Name", "value": res.Server.Name},
+		{"name": "Location", "value": res.Server.Location},
+		{"name": "IP", "value": res.Server.Ip},
+		{"name": "Charged Cost", "value": fmt.Sprintf("%v", res.Server.Cost.Charged)},
+		{"name": "Hour-On Cost", "value": fmt.Sprintf("%v", res.Server.Cost.HourOn)},
+		{"name": "Minutes-On Cost", "value": fmt.Sprintf("%v", res.Server.Cost.MinutesOn)},
+		{"name": "Hour-Off Cost", "value": fmt.Sprintf("%v", res.Server.Cost.HourOff)},
+		{"name": "Minutes-Off Cost", "value": fmt.Sprintf("%v", res.Server.Cost.MinutesOff)},
+		{"name": "CPU Model", "value": res.Server.CPUModel},
+		{"name": "GPU Count", "value": strconv.Itoa(res.Server.GPUCount)},
+		{"name": "GPU Model", "value": res.Server.GPUModel},
+		{"name": "RAM", "value": fmt.Sprintf("%vGB", res.Server.Ram)},
+		{"name": "Status", "value": res.Server.Status},
+		{"name": "Storage", "value": fmt.Sprintf("%vGB", res.Server.Storage)},
+		{"name": "Storage Class", "value": res.Server.StorageClass},
+		{"name": "Type", "value": res.Server.Type},
+		{"name": "vCPUs", "value": strconv.Itoa(res.Server.VCPUs)},
 	}
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Property", "Value"})
+	for _, elem := range props {
+		t.AppendRow(table.Row{elem["name"], elem["value"]})
+	}
+	t.Render()
 
 	return nil
 }
