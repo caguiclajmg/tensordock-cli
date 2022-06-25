@@ -4,9 +4,9 @@ A CLI client for https://tensordock.com
 
 ## Installation
 
-Grab a build from [Releases](https://github.com/caguiclajmg/tensordock-cli/releases)
+Install using `go install github.com/caguiclajmg/tensordock-cli` or grab a build from [Releases](https://github.com/caguiclajmg/tensordock-cli/releases)
 
-## Building
+## Build
 
 ```
 go build
