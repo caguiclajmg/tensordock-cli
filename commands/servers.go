@@ -310,7 +310,7 @@ func deployServer(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(res.Success)
+	fmt.Println(res.Server.Id)
 
 	return nil
 }

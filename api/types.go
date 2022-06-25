@@ -8,6 +8,12 @@ type Cost struct {
 	MinutesOn  float32 `json:"minutes_on"`
 }
 
+type ServerDeploy struct {
+	Id    string              `json:"id"`
+	Ip    string              `json:"ip"`
+	Links []map[string]string `json:"links"`
+}
+
 type Server struct {
 	Cost         Cost                         `json:"cost"`
 	CPUModel     string                       `json:"cpu_model"`

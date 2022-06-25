@@ -32,6 +32,11 @@ type BillingDetailsResponse struct {
 	BillingDetails
 }
 
+type DeployServerResponse struct {
+	Response
+	Server ServerDeploy `json:"server"`
+}
+
 type Client struct {
 	BaseUrl  string
 	ApiKey   string
@@ -197,7 +202,7 @@ func (client *Client) GetServer(server string) (*ServersGetSingleResponse, error
 	return &res, nil
 }
 
-func (client *Client) DeployServer(adminUser string, adminPass string, instanceType string, gpuModel string, gpuCount int, vcpus int, ram int, storage int, storageClass string, os string, location string, name string) (*ServersGetSingleResponse, error) {
+func (client *Client) DeployServer(adminUser string, adminPass string, instanceType string, gpuModel string, gpuCount int, vcpus int, ram int, storage int, storageClass string, os string, location string, name string) (*DeployServerResponse, error) {
 	body := map[string]string{
 		"admin_user":    adminUser,
 		"admin_pass":    adminPass,
@@ -217,7 +222,7 @@ func (client *Client) DeployServer(adminUser string, adminPass string, instanceT
 		return nil, err
 	}
 
-	var res ServersGetSingleResponse
+	var res DeployServerResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}
