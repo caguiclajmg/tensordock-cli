@@ -33,37 +33,37 @@ $ tensordock-cli servers list
 ### Get server info
 
 ```sh
-$ tensordock-cli servers info --server <serverId>
+$ tensordock-cli servers info --server SERVER_ID
 ```
 
 ### Start/Stop server
 
 ```sh
-$ tensordock-cli servers <start|stop> --server <serverId>
+$ tensordock-cli servers <start|stop> --server SERVER_ID
 ```
 
 ### Delete server
 
 ```sh
-$ tensordock-cli servers delete --server <serverId>
+$ tensordock-cli servers delete --server SERVER_ID
 ```
 
 ### Deploy server
 
 ```sh
 $ tensordock-cli servers deploy \
-    [--instanceType <INSTANCE_TYPE> \]
-    [--gpuCount <GPU_COUNT> \]
-    [--vcpus <VCPUS> \]
-    [--storage <STORAGE> \]
-    [--storageClass <STORAGE_CLASS> \]
-    [--ram <RAM> \]
-    [--os <OS> \]
-    --adminUser <ADMIN_USER> \
-    --adminPass <ADMIN_PASS> \
-    --gpuModel <GPU_MODEL> \
-    --location <LOCATION> \
-    --name <NAME>
+    [--instanceType INSTANCE_TYPE \]
+    [--gpuCount GPU_COUNT \]
+    [--vcpus VCPUS \]
+    [--storage STORAGE \]
+    [--storageClass STORAGE_CLASS \]
+    [--ram RAM \]
+    [--os OS \]
+    --adminUser ADMIN_USER \
+    --adminPass ADMIN_PASS \
+    --gpuModel GPU_MODEL \
+    --location LOCATION \
+    --name NAME
 ```
 
 ### Get billing info
