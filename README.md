@@ -1,6 +1,6 @@
 # tensordock-cli
 
-A CLI client for https://tensordock.com
+A CLI client for [TensorDock](https://tensordock.com)
 
 ## Installation
 
