@@ -56,7 +56,7 @@ func initConfig() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Printf("warning: config file %v not found", viper.ConfigFileUsed())
 	}
 
 	viper.AutomaticEnv()
