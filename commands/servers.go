@@ -163,7 +163,7 @@ func startServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return err
+		return errors.New("endpoint returned error")
 	}
 
 	return nil
@@ -177,7 +177,7 @@ func stopServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return err
+		return errors.New("endpoint returned error")
 	}
 
 	return nil
@@ -191,7 +191,7 @@ func deleteServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return err
+		return errors.New("endpoint returned error")
 	}
 
 	return nil
@@ -269,7 +269,7 @@ func deployServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return err
+		return errors.New("endpoint returned error")
 	}
 
 	fmt.Println(res.Server.Id)
@@ -285,7 +285,7 @@ func manageServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return err
+		return errors.New("endpoint returned error")
 	}
 
 	err = browser.OpenURL(res.Server.Links["dashboard"]["href"])
