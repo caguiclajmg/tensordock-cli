@@ -18,7 +18,7 @@ var (
 			}
 
 			if !res.Success {
-				log.Printf("api call failed")
+				log.Printf("endpoint returned error")
 				return nil
 			}
 

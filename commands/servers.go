@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -22,33 +23,43 @@ var (
 		RunE:  serverList,
 	}
 	infoCmd = &cobra.Command{
-		Use:   "info",
+		Use:   "info [flags] server_id",
 		Short: "Get server info",
+		Args:  cobra.ExactArgs(1),
 		RunE:  serverInfo,
 	}
 	startCmd = &cobra.Command{
-		Use:   "start",
-		Short: "Start a server",
-		RunE:  startServer,
+		Use:     "start [flags] server_id",
+		Short:   "Start a server",
+		Args:    cobra.ExactArgs(1),
+		RunE:    startServer,
+		PostRun: logAction("success"),
 	}
 	stopCmd = &cobra.Command{
-		Use:   "stop",
-		Short: "Stop a server",
-		RunE:  stopServer,
+		Use:     "stop [flags] server_id",
+		Short:   "Stop a server",
+		Args:    cobra.ExactArgs(1),
+		RunE:    stopServer,
+		PostRun: logAction("success"),
 	}
 	deleteCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "Delete a server",
-		RunE:  deleteServer,
+		Use:     "delete [flags] server_id",
+		Short:   "Delete a server",
+		Args:    cobra.ExactArgs(1),
+		RunE:    deleteServer,
+		PostRun: logAction("success"),
 	}
 	deployCmd = &cobra.Command{
-		Use:   "deploy",
-		Short: "Deploy a server",
-		RunE:  deployServer,
+		Use:     "deploy [flags] name admin_user admin_pass",
+		Short:   "Deploy a server",
+		Args:    cobra.ExactArgs(3),
+		RunE:    deployServer,
+		PostRun: logAction("success"),
 	}
 	manageCmd = &cobra.Command{
-		Use:   "manage",
+		Use:   "manage [flags] server_id",
 		Short: "Open server management panel in a browser",
+		Args:  cobra.ExactArgs(1),
 		RunE:  manageServer,
 	}
 )
@@ -57,28 +68,14 @@ func init() {
 	serversCmd.AddCommand(listCmd)
 
 	serversCmd.AddCommand(infoCmd)
-	infoCmd.Flags().String("server", "", "Server Id")
-	infoCmd.MarkFlagRequired("server")
 
 	serversCmd.AddCommand(stopCmd)
-	stopCmd.Flags().String("server", "", "Server Id")
-	stopCmd.MarkFlagRequired("server")
 
 	serversCmd.AddCommand(startCmd)
-	startCmd.Flags().String("server", "", "Server Id")
-	startCmd.MarkFlagRequired("server")
 
 	serversCmd.AddCommand(deleteCmd)
-	deleteCmd.Flags().String("server", "", "Server Id")
-	deleteCmd.MarkFlagRequired("server")
 
 	serversCmd.AddCommand(deployCmd)
-	deployCmd.Flags().String("adminUser", "", "Your desired administrator username, e.g. \"user\" or \"tensordock_user\"")
-	deployCmd.MarkFlagRequired("adminUser")
-	deployCmd.Flags().String("adminPass", "", "Your desired administrator password. Please change it once you access your server")
-	deployCmd.MarkFlagRequired("adminPass")
-	deployCmd.Flags().String("name", "", "Name of your server in our dashboard")
-	deployCmd.MarkFlagRequired("name")
 	deployCmd.Flags().String("gpuModel", "A40", "The GPU model that you would like to provision")
 	deployCmd.Flags().String("location", "na-us-las-1", "Location")
 	deployCmd.Flags().String("instanceType", "gpu", "Either \"gpu\" or \"cpu\"")
@@ -90,8 +87,6 @@ func init() {
 	deployCmd.Flags().String("os", "Ubuntu 18.04 LTS", "Operating system")
 
 	serversCmd.AddCommand(manageCmd)
-	manageCmd.Flags().String("server", "", "Server Id")
-	manageCmd.MarkFlagRequired("server")
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -103,7 +98,7 @@ func serverList(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("api call failed")
+		return errors.New("endpoint returned error")
 	}
 
 	t := table.NewWriter()
@@ -118,18 +113,14 @@ func serverList(cmd *cobra.Command, args []string) error {
 }
 
 func serverInfo(cmd *cobra.Command, args []string) error {
-	server, err := cmd.Flags().GetString("server")
-	if err != nil {
-		return err
-	}
-
+	server := args[0]
 	res, err := client.GetServer(server)
 	if err != nil {
 		return err
 	}
 
 	if !res.Success {
-		return errors.New("api call failed")
+		return errors.New("endpoint returned error")
 	}
 
 	props := []map[string]string{
@@ -165,11 +156,7 @@ func serverInfo(cmd *cobra.Command, args []string) error {
 }
 
 func startServer(cmd *cobra.Command, args []string) error {
-	server, err := cmd.Flags().GetString("server")
-	if err != nil {
-		return err
-	}
-
+	server := args[0]
 	res, err := client.StartServer(server)
 	if err != nil {
 		return err
@@ -183,11 +170,7 @@ func startServer(cmd *cobra.Command, args []string) error {
 }
 
 func stopServer(cmd *cobra.Command, args []string) error {
-	server, err := cmd.Flags().GetString("server")
-	if err != nil {
-		return err
-	}
-
+	server := args[0]
 	res, err := client.StopServer(server)
 	if err != nil {
 		return err
@@ -201,11 +184,7 @@ func stopServer(cmd *cobra.Command, args []string) error {
 }
 
 func deleteServer(cmd *cobra.Command, args []string) error {
-	server, err := cmd.Flags().GetString("server")
-	if err != nil {
-		return err
-	}
-
+	server := args[0]
 	res, err := client.DeleteServer(server)
 	if err != nil {
 		return err
@@ -220,16 +199,6 @@ func deleteServer(cmd *cobra.Command, args []string) error {
 
 func deployServer(cmd *cobra.Command, args []string) error {
 	flags := cmd.Flags()
-
-	adminUser, err := flags.GetString("adminUser")
-	if err != nil {
-		return err
-	}
-
-	adminPass, err := flags.GetString("adminPass")
-	if err != nil {
-		return err
-	}
 
 	instanceType, err := flags.GetString("instanceType")
 	if err != nil {
@@ -276,10 +245,9 @@ func deployServer(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	name, err := flags.GetString("name")
-	if err != nil {
-		return err
-	}
+	name := args[0]
+	adminUser := args[1]
+	adminPass := args[2]
 
 	res, err := client.DeployServer(
 		adminUser,
@@ -310,11 +278,7 @@ func deployServer(cmd *cobra.Command, args []string) error {
 }
 
 func manageServer(cmd *cobra.Command, args []string) error {
-	server, err := cmd.Flags().GetString("server")
-	if err != nil {
-		return err
-	}
-
+	server := args[0]
 	res, err := client.GetServer(server)
 	if err != nil {
 		return err
@@ -330,4 +294,8 @@ func manageServer(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func logAction(message string) func(*cobra.Command, []string) {
+	return func(c *cobra.Command, s []string) { log.Println(message) }
 }

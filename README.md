@@ -33,19 +33,25 @@ $ tensordock-cli servers list
 ### Get server info
 
 ```sh
-$ tensordock-cli servers info --server SERVER_ID
+$ tensordock-cli servers info SERVER_ID
 ```
 
 ### Start/Stop server
 
 ```sh
-$ tensordock-cli servers start|stop --server SERVER_ID
+$ tensordock-cli servers start|stop SERVER_ID
 ```
 
 ### Delete server
 
 ```sh
-$ tensordock-cli servers delete --server SERVER_ID
+$ tensordock-cli servers delete SERVER_ID
+```
+
+### Open management dashboard in browser
+
+```sh
+$ tensordock-cli servers manage SERVER_ID
 ```
 
 ### Deploy server
@@ -61,9 +67,9 @@ $ tensordock-cli servers deploy \
     [--storageClass STORAGE_CLASS \]
     [--ram RAM \]
     [--os OS \]
-    --adminUser ADMIN_USER \
-    --adminPass ADMIN_PASS \
-    --name NAME
+    NAME \
+    ADMIN_USER \
+    ADMIN_PASS
 ```
 
 ### Get billing info
