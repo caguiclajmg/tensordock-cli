@@ -22,6 +22,8 @@ $ tensordock-cli config --apiKey <YOUR_API_KEY> --apiToken <YOUR_API_TOKEN> [--s
 
 Note: Go to https://console.tensordock.com/api to get your API key and token
 
+Credentials may also be specified inline with every command using the `--apiKey` and `--apiToken` flags
+
 ### List servers
 
 ```sh
