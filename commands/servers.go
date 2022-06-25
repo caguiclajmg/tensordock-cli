@@ -6,6 +6,7 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 )
 
@@ -43,6 +44,11 @@ var (
 		Use:   "deploy",
 		Short: "Deploy a server",
 		RunE:  deployServer,
+	}
+	manageCmd = &cobra.Command{
+		Use:   "manage",
+		Short: "Open server management panel in a browser",
+		RunE:  manageServer,
 	}
 )
 
@@ -83,6 +89,10 @@ func init() {
 	deployCmd.Flags().String("storageClass", "st1", "io1 or st1, depending on storage class desired")
 	deployCmd.Flags().Int("ram", 2, "Number of GB of RAM to be deployed.")
 	deployCmd.Flags().String("os", "Ubuntu 18.04 LTS", "Operating system")
+
+	serversCmd.AddCommand(manageCmd)
+	manageCmd.Flags().String("server", "", "Server Id")
+	manageCmd.MarkFlagRequired("server")
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -311,6 +321,29 @@ func deployServer(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println(res.Server.Id)
+
+	return nil
+}
+
+func manageServer(cmd *cobra.Command, args []string) error {
+	server, err := cmd.Flags().GetString("server")
+	if err != nil {
+		return err
+	}
+
+	res, err := client.GetServer(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return err
+	}
+
+	err = browser.OpenURL(res.Server.Links["dashboard"]["href"])
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
