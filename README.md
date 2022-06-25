@@ -4,7 +4,7 @@ A CLI client for https://tensordock.com
 
 ## Installation
 
-Grab a build from [Releases](releases)
+Grab a build from [Releases](https://github.com/caguiclajmg/tensordock-cli/releases)
 
 ## Building
 
