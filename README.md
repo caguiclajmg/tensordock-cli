@@ -39,7 +39,7 @@ $ tensordock-cli servers info --server SERVER_ID
 ### Start/Stop server
 
 ```sh
-$ tensordock-cli servers <start|stop> --server SERVER_ID
+$ tensordock-cli servers start|stop --server SERVER_ID
 ```
 
 ### Delete server
