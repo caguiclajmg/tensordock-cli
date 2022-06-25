@@ -38,10 +38,10 @@ tensordock-cli servers list
 tensordock-cli servers info server_id
 ```
 
-### Start/Stop server
+### Start/Stop/Restart server
 
 ```sh
-tensordock-cli servers start|stop server_id
+tensordock-cli servers start|stop|restart server_id
 ```
 
 ### Delete server
