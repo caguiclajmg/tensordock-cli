@@ -50,10 +50,6 @@ $ tensordock-cli servers delete --server <serverId>
 
 ```sh
 $ tensordock-cli servers deploy \
-    --adminUser <ADMIN_USER> \
-    --adminPass <ADMIN_PASS> \
-    --gpuModel <GPU_MODEL> \
-    --location <LOCATION> \
     [--instanceType <INSTANCE_TYPE> \]
     [--gpuCount <GPU_COUNT> \]
     [--vcpus <VCPUS> \]
@@ -61,6 +57,10 @@ $ tensordock-cli servers deploy \
     [--storageClass <STORAGE_CLASS> \]
     [--ram <RAM> \]
     [--os <OS> \]
+    --adminUser <ADMIN_USER> \
+    --adminPass <ADMIN_PASS> \
+    --gpuModel <GPU_MODEL> \
+    --location <LOCATION> \
     --name <NAME>
 ```
 
