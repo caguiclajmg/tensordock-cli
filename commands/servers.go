@@ -34,6 +34,16 @@ var (
 		Short: "Stop a server",
 		RunE:  stopServer,
 	}
+	deleteCmd = &cobra.Command{
+		Use:   "delete",
+		Short: "Delete a server",
+		RunE:  deleteServer,
+	}
+	deployCmd = &cobra.Command{
+		Use:   "deploy",
+		Short: "Deploy a server",
+		RunE:  deployServer,
+	}
 )
 
 func init() {
@@ -50,6 +60,29 @@ func init() {
 	serversCmd.AddCommand(startCmd)
 	startCmd.Flags().String("server", "", "Server Id")
 	startCmd.MarkFlagRequired("server")
+
+	serversCmd.AddCommand(deleteCmd)
+	deleteCmd.Flags().String("server", "", "Server Id")
+	deleteCmd.MarkFlagRequired("server")
+
+	serversCmd.AddCommand(deployCmd)
+	deployCmd.Flags().String("adminUser", "", "Your desired administrator username, e.g. \"user\" or \"tensordock_user\"")
+	deployCmd.MarkFlagRequired("adminUser")
+	deployCmd.Flags().String("adminPass", "", "Your desired administrator password. Please change it once you access your server")
+	deployCmd.MarkFlagRequired("adminPass")
+	deployCmd.Flags().String("gpuModel", "", "The GPU model that you would like to provision")
+	deployCmd.MarkFlagRequired("gpuModel")
+	deployCmd.Flags().String("location", "", "Location")
+	deployCmd.MarkFlagRequired("location")
+	deployCmd.Flags().String("name", "", "Name of your server in our dashboard")
+	deployCmd.MarkFlagRequired("name")
+	deployCmd.Flags().String("instanceType", "gpu", "Either \"gpu\" or \"cpu\"")
+	deployCmd.Flags().Int("gpuCount", 1, "The number of GPUs of the model you specified earlier")
+	deployCmd.Flags().Int("vcpus", 1, "Number of vCPUs that you would like")
+	deployCmd.Flags().Int("storage", 20, "Number of GB of networked storage")
+	deployCmd.Flags().String("storageClass", "st1", "io1 or st1, depending on storage class desired")
+	deployCmd.Flags().Int("ram", 2, "Number of GB of RAM to be deployed.")
+	deployCmd.Flags().String("os", "Ubuntu 18.04 LTS", "Operating system")
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -169,6 +202,115 @@ func stopServer(cmd *cobra.Command, args []string) error {
 	if !res.Success {
 		return err
 	}
+
+	return nil
+}
+
+func deleteServer(cmd *cobra.Command, args []string) error {
+	server, err := cmd.Flags().GetString("server")
+	if err != nil {
+		return err
+	}
+
+	res, err := client.DeleteServer(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return err
+	}
+
+	return nil
+}
+
+func deployServer(cmd *cobra.Command, args []string) error {
+	flags := cmd.Flags()
+
+	adminUser, err := flags.GetString("adminUser")
+	if err != nil {
+		return err
+	}
+
+	adminPass, err := flags.GetString("adminPass")
+	if err != nil {
+		return err
+	}
+
+	instanceType, err := flags.GetString("instanceType")
+	if err != nil {
+		return err
+	}
+
+	gpuModel, err := flags.GetString("gpuModel")
+	if err != nil {
+		return err
+	}
+
+	gpuCount, err := flags.GetInt("gpuCount")
+	if err != nil {
+		return err
+	}
+
+	vcpus, err := flags.GetInt("vcpus")
+	if err != nil {
+		return err
+	}
+
+	ram, err := flags.GetInt("ram")
+	if err != nil {
+		return err
+	}
+
+	storage, err := flags.GetInt("storage")
+	if err != nil {
+		return err
+	}
+
+	storageClass, err := flags.GetString("storageClass")
+	if err != nil {
+		return err
+	}
+
+	os, err := flags.GetString("os")
+	if err != nil {
+		return err
+	}
+
+	location, err := flags.GetString("location")
+	if err != nil {
+		return err
+	}
+
+	name, err := flags.GetString("name")
+	if err != nil {
+		return err
+	}
+
+	res, err := client.DeployServer(
+		adminUser,
+		adminPass,
+		instanceType,
+		gpuModel,
+		gpuCount,
+		vcpus,
+		ram,
+		storage,
+		storageClass,
+		os,
+		location,
+		name,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return err
+	}
+
+	fmt.Println(res.Success)
 
 	return nil
 }

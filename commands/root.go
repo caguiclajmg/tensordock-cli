@@ -35,9 +35,11 @@ func init() {
 	pflags.StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tensordock.yml)")
 	pflags.String("apiKey", "", "API key")
 	pflags.String("apiToken", "", "API token")
+	pflags.Bool("debug", false, "Enable debug mode")
 
 	viper.BindPFlag("apiKey", pflags.Lookup("apiKey"))
 	viper.BindPFlag("apiToken", pflags.Lookup("apiToken"))
+	viper.BindPFlag("debug", pflags.Lookup("debug"))
 }
 
 func initConfig() {
@@ -62,6 +64,7 @@ func initConfig() {
 	serviceUrl := viper.GetString("serviceUrl")
 	apiKey := viper.GetString("apiKey")
 	apiToken := viper.GetString("apiToken")
+	debug := viper.GetBool("debug")
 
-	client = api.NewClient(serviceUrl, apiKey, apiToken)
+	client = api.NewClient(serviceUrl, apiKey, apiToken, debug)
 }

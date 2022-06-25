@@ -16,14 +16,13 @@ go build
 
 ### Configuration
 
-
 ```
 $ tensordock-cli config --apiKey <YOUR_API_KEY> --apiToken <YOUR_API_TOKEN> [--serviceUrl <SERVICE_URL>]
 ```
 
 Note: Go to https://console.tensordock.com/api to get your API key and token
 
-### List Servers
+### List servers
 
 ```sh
 $ tensordock-cli servers list
@@ -35,10 +34,34 @@ $ tensordock-cli servers list
 $ tensordock-cli servers info --server <serverId>
 ```
 
-### Start/Stop Server
+### Start/Stop server
 
 ```sh
 $ tensordock-cli servers <start|stop> --server <serverId>
+```
+
+### Delete server
+
+```sh
+$ tensordock-cli servers delete --server <serverId>
+```
+
+### Deploy server
+
+```sh
+$ tensordock-cli servers deploy \
+    --adminUser <ADMIN_USER> \
+    --adminPass <ADMIN_PASS> \
+    --gpuModel <GPU_MODEL> \
+    --location <LOCATION> \
+    [--instanceType <INSTANCE_TYPE> \]
+    [--gpuCount <GPU_COUNT> \]
+    [--vcpus <VCPUS> \]
+    [--storage <STORAGE> \]
+    [--storageClass <STORAGE_CLASS> \]
+    [--ram <RAM> \]
+    [--os <OS> \]
+    --name <NAME>
 ```
 
 ### Get billing info
