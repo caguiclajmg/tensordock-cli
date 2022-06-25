@@ -62,6 +62,12 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE:  manageServer,
 	}
+	restartCmd = &cobra.Command{
+		Use:   "restart [flags] server_id",
+		Short: "Restart a server",
+		Args:  cobra.ExactArgs(1),
+		RunE:  restartServer,
+	}
 )
 
 func init() {
@@ -87,6 +93,8 @@ func init() {
 	deployCmd.Flags().String("os", "Ubuntu 18.04 LTS", "Operating system")
 
 	serversCmd.AddCommand(manageCmd)
+
+	serversCmd.AddCommand(restartCmd)
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -298,4 +306,18 @@ func manageServer(cmd *cobra.Command, args []string) error {
 
 func logAction(message string) func(*cobra.Command, []string) {
 	return func(c *cobra.Command, s []string) { log.Println(message) }
+}
+
+func restartServer(cmd *cobra.Command, args []string) error {
+	server := args[0]
+	res, err := client.RestartServer(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return errors.New("endpoint returned error")
+	}
+
+	return nil
 }

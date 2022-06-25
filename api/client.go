@@ -247,3 +247,17 @@ func (client *Client) GetBillingDetails() (*BillingDetailsResponse, error) {
 func NewClient(baseUrl string, apiKey string, apiToken string, debug bool) *Client {
 	return &Client{baseUrl, apiKey, apiToken, debug}
 }
+
+func (client *Client) RestartServer(server string) (*Response, error) {
+	raw, err := client.get("restart/single", map[string]string{"server": server}, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var res Response
+	if err := json.Unmarshal(*raw, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
