@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/caguiclajmg/tensordock-cli/api"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
@@ -257,20 +258,20 @@ func deployServer(cmd *cobra.Command, args []string) error {
 	adminUser := args[1]
 	adminPass := args[2]
 
-	res, err := client.DeployServer(
-		adminUser,
-		adminPass,
-		instanceType,
-		gpuModel,
-		gpuCount,
-		vcpus,
-		ram,
-		storage,
-		storageClass,
-		os,
-		location,
-		name,
-	)
+	res, err := client.DeployServer(api.DeployServerRequest{
+		AdminUser:    adminUser,
+		AdminPass:    adminPass,
+		InstanceType: instanceType,
+		GPUModel:     gpuModel,
+		GPUCount:     gpuCount,
+		VCPUs:        vcpus,
+		RAM:          ram,
+		Storage:      storage,
+		StorageClass: storageClass,
+		OS:           os,
+		Location:     location,
+		Name:         name,
+	})
 
 	if err != nil {
 		return err

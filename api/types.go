@@ -1,21 +1,13 @@
 package api
 
-type Cost struct {
-	Charged    float32 `json:"charged"`
-	HourOff    float32 `json:"hour_off"`
-	HourOn     float32 `json:"hour_on"`
-	MinutesOff float32 `json:"minutes_off"`
-	MinutesOn  float32 `json:"minutes_on"`
-}
-
-type ServerDeploy struct {
-	Id    string              `json:"id"`
-	Ip    string              `json:"ip"`
-	Links []map[string]string `json:"links"`
-}
-
 type Server struct {
-	Cost         Cost                         `json:"cost"`
+	Cost struct {
+		Charged    float32 `json:"charged"`
+		HourOff    float32 `json:"hour_off"`
+		HourOn     float32 `json:"hour_on"`
+		MinutesOff float32 `json:"minutes_off"`
+		MinutesOn  float32 `json:"minutes_on"`
+	} `json:"cost"`
 	CPUModel     string                       `json:"cpu_model"`
 	GPUCount     int                          `json:"gpu_count"`
 	GPUModel     string                       `json:"gpu_model"`

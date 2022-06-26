@@ -9,32 +9,52 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strconv"
 	"strings"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 type Response struct {
 	Success bool `json:"success"`
 }
 
-type ServersGetSingleResponse struct {
+type GetServerResponse struct {
 	Response
 	Server Server `json:"server"`
 }
 
-type ServersListResponse struct {
+type ListServersResponse struct {
 	Response
 	Servers map[string]Server `json:"servers"`
 }
 
-type BillingDetailsResponse struct {
+type GetBillingDetailsResponse struct {
 	Response
 	BillingDetails
 }
 
+type DeployServerRequest struct {
+	AdminUser    string `mapstructure:"admin_user"`
+	AdminPass    string `mapstructure:"admin_pass"`
+	InstanceType string `mapstructure:"instance_type"`
+	GPUModel     string `mapstructure:"gpu_model"`
+	GPUCount     int    `mapstructure:"gpu_count"`
+	VCPUs        int    `mapstructure:"vcpus"`
+	RAM          int    `mapstructure:"ram"`
+	Storage      int    `mapstructure:"storage"`
+	StorageClass string `mapstructure:"storage_class"`
+	OS           string `mapstructure:"os"`
+	Location     string `mapstructure:"location"`
+	Name         string `mapstructure:"name"`
+}
+
 type DeployServerResponse struct {
 	Response
-	Server ServerDeploy `json:"server"`
+	Server struct {
+		Id    string              `json:"id"`
+		Ip    string              `json:"ip"`
+		Links []map[string]string `json:"links"`
+	} `json:"server"`
 }
 
 type Client struct {
@@ -83,6 +103,9 @@ func (client *Client) do(method string, path string, params map[string]string, h
 	}
 
 	bytes, _ := ioutil.ReadAll(res.Body)
+
+	// FIXME: Workaround for API issue which causes endpoint to
+	// return an HTML Page with a 200 Status code
 	if strings.HasPrefix(res.Header.Get("Content-Type"), "text/html") {
 		bytes, err := json.Marshal(Response{Success: false})
 		if err != nil {
@@ -132,13 +155,13 @@ func (client *Client) post(path string, body map[string]string, auth bool) (*jso
 	)
 }
 
-func (client *Client) ListServers() (*ServersListResponse, error) {
+func (client *Client) ListServers() (*ListServersResponse, error) {
 	raw, err := client.get("list", nil, true)
 	if err != nil {
 		return nil, err
 	}
 
-	var res ServersListResponse
+	var res ListServersResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}
@@ -188,13 +211,13 @@ func (client *Client) DeleteServer(server string) (*Response, error) {
 	return &res, nil
 }
 
-func (client *Client) GetServer(server string) (*ServersGetSingleResponse, error) {
+func (client *Client) GetServer(server string) (*GetServerResponse, error) {
 	raw, err := client.get("get/single", map[string]string{"server": server}, true)
 	if err != nil {
 		return nil, err
 	}
 
-	var res ServersGetSingleResponse
+	var res GetServerResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}
@@ -202,21 +225,19 @@ func (client *Client) GetServer(server string) (*ServersGetSingleResponse, error
 	return &res, nil
 }
 
-func (client *Client) DeployServer(adminUser string, adminPass string, instanceType string, gpuModel string, gpuCount int, vcpus int, ram int, storage int, storageClass string, os string, location string, name string) (*DeployServerResponse, error) {
-	body := map[string]string{
-		"admin_user":    adminUser,
-		"admin_pass":    adminPass,
-		"instance_type": instanceType,
-		"gpu_model":     gpuModel,
-		"gpu_count":     strconv.Itoa(gpuCount),
-		"vcpus":         strconv.Itoa(vcpus),
-		"ram":           strconv.Itoa(ram),
-		"storage":       strconv.Itoa(storage),
-		"storage_class": storageClass,
-		"os":            os,
-		"location":      location,
-		"name":          name,
+func (client *Client) DeployServer(req DeployServerRequest) (*DeployServerResponse, error) {
+	var rawBody map[string]interface{}
+	err := mapstructure.Decode(req, &rawBody)
+	if err != nil {
+		return nil, err
 	}
+
+	body := map[string]string{}
+	for key, elem := range rawBody {
+		str := fmt.Sprintf("%v", elem)
+		body[key] = str
+	}
+
 	raw, err := client.post("deploy/single/custom", body, true)
 	if err != nil {
 		return nil, err
@@ -230,13 +251,13 @@ func (client *Client) DeployServer(adminUser string, adminPass string, instanceT
 	return &res, nil
 }
 
-func (client *Client) GetBillingDetails() (*BillingDetailsResponse, error) {
+func (client *Client) GetBillingDetails() (*GetBillingDetailsResponse, error) {
 	raw, err := client.get("billing", nil, true)
 	if err != nil {
 		return nil, err
 	}
 
-	var res BillingDetailsResponse
+	var res GetBillingDetailsResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}
