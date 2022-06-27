@@ -87,6 +87,7 @@ func init() {
 	deployCmd.Flags().String("location", "na-us-chi-1", "Location")
 	deployCmd.Flags().String("instanceType", "gpu", "Either \"gpu\" or \"cpu\"")
 	deployCmd.Flags().Int("gpuCount", 1, "The number of GPUs of the model you specified earlier")
+	deployCmd.Flags().String("cpuModel", "Intel_Xeon_v4", "The CPU model that you would like to provision")
 	deployCmd.Flags().Int("vcpus", 2, "Number of vCPUs that you would like")
 	deployCmd.Flags().Int("storage", 20, "Number of GB of networked storage")
 	deployCmd.Flags().String("storageClass", "io1", "io1 or st1, depending on storage class desired")
@@ -224,6 +225,11 @@ func deployServer(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	cpuModel, err := flags.GetString("cpuModel")
+	if err != nil {
+		return err
+	}
+
 	vcpus, err := flags.GetInt("vcpus")
 	if err != nil {
 		return err
@@ -258,12 +264,10 @@ func deployServer(cmd *cobra.Command, args []string) error {
 	adminUser := args[1]
 	adminPass := args[2]
 
-	res, err := client.DeployServer(api.DeployServerRequest{
+	req := api.DeployServerRequest{
 		AdminUser:    adminUser,
 		AdminPass:    adminPass,
 		InstanceType: instanceType,
-		GPUModel:     gpuModel,
-		GPUCount:     gpuCount,
 		VCPUs:        vcpus,
 		RAM:          ram,
 		Storage:      storage,
@@ -271,7 +275,19 @@ func deployServer(cmd *cobra.Command, args []string) error {
 		OS:           os,
 		Location:     location,
 		Name:         name,
-	})
+	}
+
+	switch instanceType {
+	case "cpu":
+		req.CPUModel = cpuModel
+	case "gpu":
+		req.GPUModel = gpuModel
+		req.GPUCount = gpuCount
+	default:
+		return errors.New("unknown instance type")
+	}
+
+	res, err := client.DeployServer(req)
 
 	if err != nil {
 		return err

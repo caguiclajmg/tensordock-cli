@@ -38,8 +38,9 @@ type DeployServerRequest struct {
 	AdminUser    string `mapstructure:"admin_user"`
 	AdminPass    string `mapstructure:"admin_pass"`
 	InstanceType string `mapstructure:"instance_type"`
-	GPUModel     string `mapstructure:"gpu_model"`
-	GPUCount     int    `mapstructure:"gpu_count"`
+	GPUModel     string `mapstructure:"gpu_model,omitempty"`
+	GPUCount     int    `mapstructure:"gpu_count,omitempty"`
+	CPUModel     string `mapstructure:"cpu_model,omitempty"`
 	VCPUs        int    `mapstructure:"vcpus"`
 	RAM          int    `mapstructure:"ram"`
 	Storage      int    `mapstructure:"storage"`
