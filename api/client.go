@@ -15,7 +15,8 @@ import (
 )
 
 type Response struct {
-	Success bool `json:"success"`
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
 }
 
 type GetServerResponse struct {
@@ -107,7 +108,7 @@ func (client *Client) do(method string, path string, params map[string]string, h
 	// FIXME: Workaround for API issue which causes endpoint to
 	// return an HTML Page with a 200 Status code
 	if strings.HasPrefix(res.Header.Get("Content-Type"), "text/html") {
-		bytes, err := json.Marshal(Response{Success: false})
+		bytes, err := json.Marshal(Response{Success: false, Error: "api call failed"})
 		if err != nil {
 			return nil, err
 		}

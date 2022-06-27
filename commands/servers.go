@@ -107,7 +107,7 @@ func serverList(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	t := table.NewWriter()
@@ -129,7 +129,7 @@ func serverInfo(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	props := []map[string]string{
@@ -172,7 +172,7 @@ func startServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	return nil
@@ -186,7 +186,7 @@ func stopServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func deleteServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	return nil
@@ -278,7 +278,7 @@ func deployServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	fmt.Println(res.Server.Id)
@@ -294,7 +294,7 @@ func manageServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	err = browser.OpenURL(res.Server.Links["dashboard"]["href"])
@@ -317,7 +317,7 @@ func restartServer(cmd *cobra.Command, args []string) error {
 	}
 
 	if !res.Success {
-		return errors.New("endpoint returned error")
+		return errors.New(res.Error)
 	}
 
 	return nil

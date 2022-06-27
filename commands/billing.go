@@ -1,8 +1,8 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -18,8 +18,7 @@ var (
 			}
 
 			if !res.Success {
-				log.Printf("endpoint returned error")
-				return nil
+				return errors.New(res.Error)
 			}
 
 			fmt.Printf(`Balance: %v
