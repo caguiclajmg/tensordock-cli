@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
@@ -55,6 +56,16 @@ type DeployServerResponse struct {
 		Ip    string              `json:"ip"`
 		Links []map[string]string `json:"links"`
 	} `json:"server"`
+}
+
+type ModifyServerRequest struct {
+	ServerId     *string `mapstructure:"server_id,omitempty"`
+	InstanceType *string `mapstructure:"instance_type,omitempty"`
+	GPUModel     *string `mapstructure:"gpu_model,omitempty"`
+	GPUCount     *int    `mapstructure:"gpu_count,omitempty"`
+	VCPUs        *int    `mapstructure:"vcpus,omitempty"`
+	RAM          *int    `mapstructure:"ram,omitempty"`
+	Storage      *int    `mapstructure:"storage,omitempty"`
 }
 
 type Client struct {
@@ -232,6 +243,7 @@ func (client *Client) DeployServer(req DeployServerRequest) (*DeployServerRespon
 		return nil, err
 	}
 
+	// convert to map[string]string
 	body := map[string]string{}
 	for key, elem := range rawBody {
 		str := fmt.Sprintf("%v", elem)
@@ -271,6 +283,36 @@ func NewClient(baseUrl string, apiKey string, apiToken string, debug bool) *Clie
 
 func (client *Client) RestartServer(server string) (*Response, error) {
 	raw, err := client.get("restart/single", map[string]string{"server": server}, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var res Response
+	if err := json.Unmarshal(*raw, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (client *Client) ModifyServer(req ModifyServerRequest) (*Response, error) {
+	var rawBody map[string]interface{}
+	err := mapstructure.Decode(req, &rawBody)
+	if err != nil {
+		return nil, err
+	}
+
+	// conver to map[string]string resolving pointers as necessary
+	body := map[string]string{}
+	for key, elem := range rawBody {
+		val := reflect.ValueOf(elem)
+		if val.Kind() == reflect.Ptr {
+			val = val.Elem()
+		}
+		body[key] = fmt.Sprintf("%v", val)
+	}
+
+	raw, err := client.post("modify/single/custom", body, true)
 	if err != nil {
 		return nil, err
 	}

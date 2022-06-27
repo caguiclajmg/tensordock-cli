@@ -69,6 +69,12 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE:  restartServer,
 	}
+	modifyCmd = &cobra.Command{
+		Use:   "modify [flags] server_id",
+		Short: "Modify a server",
+		Args:  cobra.ExactArgs(1),
+		RunE:  modifyServer,
+	}
 )
 
 func init() {
@@ -96,6 +102,17 @@ func init() {
 	serversCmd.AddCommand(manageCmd)
 
 	serversCmd.AddCommand(restartCmd)
+
+	serversCmd.AddCommand(modifyCmd)
+	modifyCmd.Flags().String("gpuModel", "Quadro_4000", "The GPU model that you would like to provision")
+	modifyCmd.Flags().String("location", "na-us-chi-1", "Location")
+	modifyCmd.Flags().String("instanceType", "gpu", "Either \"gpu\" or \"cpu\"")
+	modifyCmd.Flags().Int("gpuCount", 1, "The number of GPUs of the model you specified earlier")
+	modifyCmd.Flags().Int("vcpus", 2, "Number of vCPUs that you would like")
+	modifyCmd.Flags().Int("storage", 20, "Number of GB of networked storage")
+	modifyCmd.Flags().String("storageClass", "io1", "io1 or st1, depending on storage class desired")
+	modifyCmd.Flags().Int("ram", 4, "Number of GB of RAM to be deployed.")
+	modifyCmd.Flags().String("os", "Ubuntu 18.04 LTS", "Operating system")
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -312,6 +329,72 @@ func logAction(message string) func(*cobra.Command, []string) {
 func restartServer(cmd *cobra.Command, args []string) error {
 	server := args[0]
 	res, err := client.RestartServer(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return errors.New("endpoint returned error")
+	}
+
+	return nil
+}
+
+func modifyServer(cmd *cobra.Command, args []string) error {
+	server := args[0]
+	req := api.ModifyServerRequest{ServerId: &server}
+
+	flags := cmd.Flags()
+
+	if instanceType, err := flags.GetString("instanceType"); err == nil {
+		if flags.Changed("instanceType") {
+			req.InstanceType = &instanceType
+		}
+	} else {
+		return err
+	}
+
+	if gpuModel, err := flags.GetString("gpuModel"); err == nil {
+		if flags.Changed("gpuModel") {
+			req.GPUModel = &gpuModel
+		}
+	} else {
+		return err
+	}
+
+	if gpuCount, err := flags.GetInt("gpuCount"); err == nil {
+		if flags.Changed("gpuCount") {
+			req.GPUCount = &gpuCount
+		}
+	} else {
+		return err
+	}
+
+	if vcpus, err := flags.GetInt("vcpus"); err == nil {
+		if flags.Changed("vcpus") {
+			req.VCPUs = &vcpus
+		}
+	} else {
+		return err
+	}
+
+	if ram, err := flags.GetInt("ram"); err == nil {
+		if flags.Changed("ram") {
+			req.RAM = &ram
+		}
+	} else {
+		return err
+	}
+
+	if storage, err := flags.GetInt("storage"); err == nil {
+		if flags.Changed("storage") {
+			req.Storage = &storage
+		}
+	} else {
+		return err
+	}
+
+	res, err := client.ModifyServer(req)
 	if err != nil {
 		return err
 	}
