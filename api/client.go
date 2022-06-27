@@ -58,6 +58,21 @@ type DeployServerResponse struct {
 	} `json:"server"`
 }
 
+type ListGpuStockResponse struct {
+	Response
+	Stock map[string]map[string]struct {
+		AvailableNow     int `json:"available_now"`
+		AvailableReserve int `json:"available_reserve"`
+	} `json:"stock"`
+}
+
+type ListCpuStockResponse struct {
+	Response
+	Stock map[string]map[string]struct {
+		AvailableNow string `json:"available_now"`
+	} `json:"stock"`
+}
+
 type Client struct {
 	BaseUrl  string
 	ApiKey   string
@@ -277,6 +292,34 @@ func (client *Client) RestartServer(server string) (*Response, error) {
 	}
 
 	var res Response
+	if err := json.Unmarshal(*raw, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (client *Client) ListGpuStock() (*ListGpuStockResponse, error) {
+	raw, err := client.get("stock/list", nil, false)
+	if err != nil {
+		return nil, err
+	}
+
+	var res ListGpuStockResponse
+	if err := json.Unmarshal(*raw, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (client *Client) ListCpuStock() (*ListCpuStockResponse, error) {
+	raw, err := client.get("stock/cpu/list", nil, false)
+	if err != nil {
+		return nil, err
+	}
+
+	var res ListCpuStockResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}
