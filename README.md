@@ -74,8 +74,32 @@ tensordock-cli servers deploy \
     admin_pass
 ```
 
+#### Deploy a GPU Server
+
+```sh
+tensordock-cli servers deploy server_name admin_user admin_pass --gpuCount 2 --gpuModel A4000
+```
+
+#### CPU-only Server
+
+```sh
+tensordock-cli servers deploy server_name admin_user admin_pass --instanceType cpu --cpuModel Intel_Xeon_V4
+```
+
 ### Get billing info
 
 ```sh
 tensordock-cli billing
+```
+
+### Get GPU stock
+
+```sh
+tensordock-cli stock list
+```
+
+### Get CPU stock
+
+```sh
+tensordock-cli stock list --type cpu
 ```
