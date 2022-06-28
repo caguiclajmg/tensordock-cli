@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
@@ -130,6 +132,29 @@ func (client *Client) do(method string, path string, params map[string]string, h
 		}
 		msg := json.RawMessage(bytes)
 		return &msg, nil
+	}
+
+	// FIXME: Some endpoints return a string boolean on the `success`` field
+	var raw map[string]interface{}
+	err = json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return nil, err
+	}
+	if val, ok := raw["success"]; ok {
+		if reflect.ValueOf(val).Kind() == reflect.String {
+			success, err := strconv.ParseBool(val.(string))
+			if err != nil {
+				success = false
+			}
+			raw["success"] = success
+			bytes, err := json.Marshal(raw)
+			if err != nil {
+				return nil, err
+			}
+
+			msg := json.RawMessage(bytes)
+			return &msg, nil
+		}
 	}
 
 	msg := json.RawMessage(bytes)
