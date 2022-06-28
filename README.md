@@ -56,7 +56,7 @@ tensordock-cli servers delete server_id
 tensordock-cli servers manage server_id
 ```
 
-### Deploy server
+### Deploy a server
 
 ```sh
 tensordock-cli servers deploy \
@@ -80,7 +80,7 @@ tensordock-cli servers deploy \
 tensordock-cli servers deploy server_name admin_user admin_pass --gpuCount 2 --gpuModel A4000
 ```
 
-#### CPU-only Server
+#### Deploy a CPU-only Server
 
 ```sh
 tensordock-cli servers deploy server_name admin_user admin_pass --instanceType cpu --cpuModel Intel_Xeon_V4
