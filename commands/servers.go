@@ -92,7 +92,7 @@ func init() {
 	deployCmd.Flags().Int("storage", 20, "Number of GB of networked storage")
 	deployCmd.Flags().String("storageClass", "io1", "io1 or st1, depending on storage class desired")
 	deployCmd.Flags().Int("ram", 4, "Number of GB of RAM to be deployed.")
-	deployCmd.Flags().String("os", "Ubuntu 18.04 LTS", "Operating system")
+	deployCmd.Flags().String("os", "Ubuntu 20.04 LTS", "Operating system")
 
 	serversCmd.AddCommand(manageCmd)
 
