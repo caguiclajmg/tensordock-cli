@@ -64,10 +64,11 @@ var (
 		RunE:  manageServer,
 	}
 	restartCmd = &cobra.Command{
-		Use:   "restart [flags] server_id",
-		Short: "Restart a server",
-		Args:  cobra.ExactArgs(1),
-		RunE:  restartServer,
+		Use:     "restart [flags] server_id",
+		Short:   "Restart a server",
+		Args:    cobra.ExactArgs(1),
+		RunE:    restartServer,
+		PostRun: logAction("success"),
 	}
 	modifyCmd = &cobra.Command{
 		Use:     "modify [flags] server_id",
@@ -106,8 +107,8 @@ func init() {
 	serversCmd.AddCommand(restartCmd)
 
 	serversCmd.AddCommand(modifyCmd)
-	modifyCmd.Flags().String("gpuModel", "Quadro_4000", "The GPU model that you would like to provision")
 	modifyCmd.Flags().String("instanceType", "gpu", "Either \"gpu\" or \"cpu\"")
+	modifyCmd.Flags().String("gpuModel", "Quadro_4000", "The GPU model that you would like to provision")
 	modifyCmd.Flags().Int("gpuCount", 1, "The number of GPUs of the model you specified earlier")
 	modifyCmd.Flags().String("cpuModel", "Intel_Xeon_v4", "The CPU model that you would like to provision")
 	modifyCmd.Flags().Int("vcpus", 2, "Number of vCPUs that you would like")
@@ -360,41 +361,73 @@ func modifyServer(cmd *cobra.Command, args []string) error {
 
 	serverId := args[0]
 
-	instanceType, err := flags.GetString("instanceType")
-	if err != nil {
-		return err
+	var instanceType *string = nil
+	if flags.Changed("instanceType") {
+		instanceTypeVal, err := flags.GetString("instanceType")
+		if err != nil {
+			return err
+		}
+		instanceType = &instanceTypeVal
 	}
 
-	gpuModel, err := flags.GetString("gpuModel")
-	if err != nil {
-		return err
+	var gpuModel *string = nil
+	if flags.Changed("gpuModel") {
+		gpuModelVal, err := flags.GetString("gpuModel")
+		if err != nil {
+			return err
+		}
+		gpuModel = &gpuModelVal
 	}
 
-	gpuCount, err := flags.GetInt("gpuCount")
-	if err != nil {
-		return err
+	var gpuCount *int = nil
+	if flags.Changed("gpuCount") {
+		gpuCountVal, err := flags.GetInt("gpuCount")
+		if err != nil {
+			return err
+		}
+		gpuCount = &gpuCountVal
 	}
 
-	cpuModel, err := flags.GetString("cpuModel")
-	if err != nil {
-		return err
+	var cpuModel *string = nil
+	if flags.Changed("cpuModel") {
+		cpuModelVal, err := flags.GetString("cpuModel")
+		if err != nil {
+			return err
+		}
+		cpuModel = &cpuModelVal
 	}
 
-	vcpus, err := flags.GetInt("vcpus")
-	if err != nil {
-		return err
+	var vcpus *int = nil
+	if flags.Changed("vcpus") {
+		vcpusVal, err := flags.GetInt("vcpus")
+		if err != nil {
+			return err
+		}
+		vcpus = &vcpusVal
 	}
 
-	ram, err := flags.GetInt("ram")
-	if err != nil {
-		return err
+	var ram *int = nil
+	if flags.Changed("ram") {
+		ramVal, err := flags.GetInt("ram")
+		if err != nil {
+			return err
+		}
+		ram = &ramVal
 	}
 
-	storage, err := flags.GetInt("storage")
-	if err != nil {
-		return err
+	var storage *int = nil
+	if flags.Changed("storage") {
+		storageVal, err := flags.GetInt("storage")
+		if err != nil {
+			return err
+		}
+		storage = &storageVal
 	}
 
+	// based on tests, it seems that the endpoint does not
+	// support specifying only parts of the spec to modify
+	// (e.g. adjust VCPUs only) and that you need to specify
+	// the entirety of the server configuration on every call
 	req := api.ModifyServerRequest{
 		ServerId:     serverId,
 		InstanceType: instanceType,
@@ -403,7 +436,7 @@ func modifyServer(cmd *cobra.Command, args []string) error {
 		Storage:      storage,
 	}
 
-	switch instanceType {
+	switch *instanceType {
 	case "cpu":
 		req.CPUModel = cpuModel
 	case "gpu":

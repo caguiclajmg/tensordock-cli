@@ -53,14 +53,14 @@ type DeployServerRequest struct {
 }
 
 type ModifyServerRequest struct {
-	ServerId     string `mapstructure:"server_id"`
-	InstanceType string `mapstructure:"instance_type"`
-	GPUModel     string `mapstructure:"gpu_model,omitempty"`
-	GPUCount     int    `mapstructure:"gpu_count,omitempty"`
-	CPUModel     string `mapstructure:"cpu_model,omitempty"`
-	VCPUs        int    `mapstructure:"vcpus"`
-	RAM          int    `mapstructure:"ram"`
-	Storage      int    `mapstructure:"storage"`
+	ServerId     string  `mapstructure:"server_id"`
+	InstanceType *string `mapstructure:"instance_type"`
+	GPUModel     *string `mapstructure:"gpu_model,omitempty"`
+	GPUCount     *int    `mapstructure:"gpu_count,omitempty"`
+	CPUModel     *string `mapstructure:"cpu_model,omitempty"`
+	VCPUs        *int    `mapstructure:"vcpus"`
+	RAM          *int    `mapstructure:"ram"`
+	Storage      *int    `mapstructure:"storage"`
 }
 
 type DeployServerResponse struct {
@@ -85,10 +85,6 @@ type ListCpuStockResponse struct {
 	Stock map[string]map[string]struct {
 		AvailableNow string `json:"available_now"`
 	} `json:"stock"`
-}
-
-type ModifyServerResponse struct {
-	Response
 }
 
 type Client struct {
@@ -368,17 +364,24 @@ func (client *Client) ListCpuStock() (*ListCpuStockResponse, error) {
 	return &res, nil
 }
 
-func (client *Client) ModifyServer(req ModifyServerRequest) (*ModifyServerResponse, error) {
+func (client *Client) ModifyServer(req ModifyServerRequest) (*Response, error) {
 	var rawBody map[string]interface{}
 	err := mapstructure.Decode(req, &rawBody)
 	if err != nil {
 		return nil, err
 	}
 
+	// conver to map[string]string skipping nil pointers
 	body := map[string]string{}
 	for key, elem := range rawBody {
-		str := fmt.Sprintf("%v", elem)
-		body[key] = str
+		val := reflect.ValueOf(elem)
+		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				continue
+			}
+			val = val.Elem()
+		}
+		body[key] = fmt.Sprintf("%v", val)
 	}
 
 	raw, err := client.post("modify/single/custom", body, true)
@@ -386,7 +389,7 @@ func (client *Client) ModifyServer(req ModifyServerRequest) (*ModifyServerRespon
 		return nil, err
 	}
 
-	var res ModifyServerResponse
+	var res Response
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}

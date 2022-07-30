@@ -60,10 +60,11 @@ tensordock-cli servers manage server_id
 
 ```sh
 tensordock-cli servers deploy \
-    [--gpuModel gpu_model \]
     [--location location \]
     [--instanceType instance_type \]
+    [--gpuModel gpu_model \]
     [--gpuCount gpu_count \]
+    [--cpuModel cpu_model \]
     [--vcpus vcpus \]
     [--storage storage \]
     [--storageClass storage_class \]
@@ -73,6 +74,8 @@ tensordock-cli servers deploy \
     admin_user \
     admin_pass
 ```
+
+**Tip**: try `tensordock-cli stock list [--type cpu]` to find out available values for `gpu_model`, `location` and `cpu_model` 
 
 #### Deploy a GPU Server
 
@@ -86,16 +89,29 @@ tensordock-cli servers deploy server_name admin_user admin_pass --gpuCount 2 --g
 tensordock-cli servers deploy server_name admin_user admin_pass --instanceType cpu --cpuModel Intel_Xeon_V4
 ```
 
+#### Modify a server
+
+```sh
+tensordock-cli servers modify server_id \
+    --instanceType instance_type \
+    --gpuModel gpu_mdoel \
+    --gpuCount gpu_count \
+    --cpuModel cpu_model \
+    --storage storage \
+    --vcpus vcpus \
+    --ram ram
+```
+
 #### Convert a server to a CPU instance
 
 ```sh
-tensordock-cli servers modify server_id --instanceType cpu --cpuModel Intel_Xeon_V4
+tensordock-cli servers modify server_id --instanceType cpu --cpuModel Intel_Xeon_V4 --storage 20 --vcpus 2 --ram 4
 ```
 
 #### Convert a server to a GPU instance
 
 ```sh
-tensordock-cli servers modify server_id --instanceType gpu --gpuModel Quadro_4000 --gpuCount 2
+tensordock-cli servers modify server_id --instanceType gpu --gpuModel Quadro_4000 --gpuCount 2 --storage 20 --vcpus 2 --ram 4
 ```
 
 ### Get billing info
