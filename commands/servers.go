@@ -69,6 +69,13 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE:  restartServer,
 	}
+	modifyCmd = &cobra.Command{
+		Use:     "modify [flags] server_id",
+		Short:   "Modify a server",
+		Args:    cobra.ExactArgs(1),
+		RunE:    modifyServer,
+		PostRun: logAction("success"),
+	}
 )
 
 func init() {
@@ -97,6 +104,15 @@ func init() {
 	serversCmd.AddCommand(manageCmd)
 
 	serversCmd.AddCommand(restartCmd)
+
+	serversCmd.AddCommand(modifyCmd)
+	modifyCmd.Flags().String("gpuModel", "Quadro_4000", "The GPU model that you would like to provision")
+	modifyCmd.Flags().String("instanceType", "gpu", "Either \"gpu\" or \"cpu\"")
+	modifyCmd.Flags().Int("gpuCount", 1, "The number of GPUs of the model you specified earlier")
+	modifyCmd.Flags().String("cpuModel", "Intel_Xeon_v4", "The CPU model that you would like to provision")
+	modifyCmd.Flags().Int("vcpus", 2, "Number of vCPUs that you would like")
+	modifyCmd.Flags().Int("storage", 20, "Number of GB of networked storage")
+	modifyCmd.Flags().Int("ram", 4, "Number of GB of RAM to be deployed.")
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -328,6 +344,77 @@ func logAction(message string) func(*cobra.Command, []string) {
 func restartServer(cmd *cobra.Command, args []string) error {
 	server := args[0]
 	res, err := client.RestartServer(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return errors.New(res.Error)
+	}
+
+	return nil
+}
+
+func modifyServer(cmd *cobra.Command, args []string) error {
+	flags := cmd.Flags()
+
+	serverId := args[0]
+
+	instanceType, err := flags.GetString("instanceType")
+	if err != nil {
+		return err
+	}
+
+	gpuModel, err := flags.GetString("gpuModel")
+	if err != nil {
+		return err
+	}
+
+	gpuCount, err := flags.GetInt("gpuCount")
+	if err != nil {
+		return err
+	}
+
+	cpuModel, err := flags.GetString("cpuModel")
+	if err != nil {
+		return err
+	}
+
+	vcpus, err := flags.GetInt("vcpus")
+	if err != nil {
+		return err
+	}
+
+	ram, err := flags.GetInt("ram")
+	if err != nil {
+		return err
+	}
+
+	storage, err := flags.GetInt("storage")
+	if err != nil {
+		return err
+	}
+
+	req := api.ModifyServerRequest{
+		ServerId:     serverId,
+		InstanceType: instanceType,
+		VCPUs:        vcpus,
+		RAM:          ram,
+		Storage:      storage,
+	}
+
+	switch instanceType {
+	case "cpu":
+		req.CPUModel = cpuModel
+	case "gpu":
+		req.GPUModel = gpuModel
+		req.GPUCount = gpuCount
+	default:
+		return errors.New("unknown instance type")
+	}
+
+	res, err := client.ModifyServer(req)
+
 	if err != nil {
 		return err
 	}

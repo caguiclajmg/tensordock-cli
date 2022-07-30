@@ -52,6 +52,17 @@ type DeployServerRequest struct {
 	Name         string `mapstructure:"name"`
 }
 
+type ModifyServerRequest struct {
+	ServerId     string `mapstructure:"server_id"`
+	InstanceType string `mapstructure:"instance_type"`
+	GPUModel     string `mapstructure:"gpu_model,omitempty"`
+	GPUCount     int    `mapstructure:"gpu_count,omitempty"`
+	CPUModel     string `mapstructure:"cpu_model,omitempty"`
+	VCPUs        int    `mapstructure:"vcpus"`
+	RAM          int    `mapstructure:"ram"`
+	Storage      int    `mapstructure:"storage"`
+}
+
 type DeployServerResponse struct {
 	Response
 	Server struct {
@@ -74,6 +85,10 @@ type ListCpuStockResponse struct {
 	Stock map[string]map[string]struct {
 		AvailableNow string `json:"available_now"`
 	} `json:"stock"`
+}
+
+type ModifyServerResponse struct {
+	Response
 }
 
 type Client struct {
@@ -346,6 +361,32 @@ func (client *Client) ListCpuStock() (*ListCpuStockResponse, error) {
 	}
 
 	var res ListCpuStockResponse
+	if err := json.Unmarshal(*raw, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (client *Client) ModifyServer(req ModifyServerRequest) (*ModifyServerResponse, error) {
+	var rawBody map[string]interface{}
+	err := mapstructure.Decode(req, &rawBody)
+	if err != nil {
+		return nil, err
+	}
+
+	body := map[string]string{}
+	for key, elem := range rawBody {
+		str := fmt.Sprintf("%v", elem)
+		body[key] = str
+	}
+
+	raw, err := client.post("modify/single/custom", body, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var res ModifyServerResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}
