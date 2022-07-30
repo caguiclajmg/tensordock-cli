@@ -75,7 +75,7 @@ tensordock-cli servers deploy \
     admin_pass
 ```
 
-**Tip**: try `tensordock-cli stock list [--type cpu]` to find out available values for `gpu_model`, `location` and `cpu_model` 
+**Tip:** try `tensordock-cli stock list [--type cpu]` to find out available values for `gpu_model`, `location` and `cpu_model` 
 
 #### Deploy a GPU Server
 
