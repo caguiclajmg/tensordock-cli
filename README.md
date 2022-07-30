@@ -86,6 +86,18 @@ tensordock-cli servers deploy server_name admin_user admin_pass --gpuCount 2 --g
 tensordock-cli servers deploy server_name admin_user admin_pass --instanceType cpu --cpuModel Intel_Xeon_V4
 ```
 
+#### Convert a server to a CPU instance
+
+```sh
+tensordock-cli servers modify server_name --instanceType cpu --cpuModel Intel_Xeon_V4
+```
+
+#### Convert a server to a GPU instance
+
+```sh
+tensordock-cli servers modify server_name --instanceType gpu --gpuModel Quadro_4000 --gpuCount 2
+```
+
 ### Get billing info
 
 ```sh
