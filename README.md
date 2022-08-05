@@ -38,6 +38,12 @@ tensordock-cli servers list
 tensordock-cli servers info server_id
 ```
 
+### Query server status from hypervisor
+
+```sh
+tensordock-cli servers status server_id
+```
+
 ### Start/Stop/Restart server
 
 ```sh
