@@ -26,6 +26,11 @@ type GetServerResponse struct {
 	Server Server `json:"server"`
 }
 
+type GetServerStatusResponse struct {
+	Response
+	Status string `json:"status"`
+}
+
 type ListServersResponse struct {
 	Response
 	Servers map[string]Server `json:"servers"`
@@ -134,7 +139,7 @@ func (client *Client) do(method string, path string, params map[string]string, h
 
 	bytes, _ := ioutil.ReadAll(res.Body)
 
-	// FIXME: Workaround for API issue which causes endpoint to
+	// HACK: Workaround for API issue which causes endpoint to
 	// return an HTML Page with a 200 Status code
 	if strings.HasPrefix(res.Header.Get("Content-Type"), "text/html") {
 		bytes, err := json.Marshal(Response{Success: false, Error: "api call failed"})
@@ -145,12 +150,13 @@ func (client *Client) do(method string, path string, params map[string]string, h
 		return &msg, nil
 	}
 
-	// FIXME: Some endpoints return a string boolean on the `success`` field
 	var raw map[string]interface{}
 	err = json.Unmarshal(bytes, &raw)
 	if err != nil {
 		return nil, err
 	}
+
+	// HACK: Some endpoints return a string boolean on the `success`` field
 	if val, ok := raw["success"]; ok {
 		if reflect.ValueOf(val).Kind() == reflect.String {
 			success, err := strconv.ParseBool(val.(string))
@@ -158,14 +164,21 @@ func (client *Client) do(method string, path string, params map[string]string, h
 				success = false
 			}
 			raw["success"] = success
-			bytes, err := json.Marshal(raw)
-			if err != nil {
-				return nil, err
-			}
-
-			msg := json.RawMessage(bytes)
-			return &msg, nil
 		}
+	}
+
+	// HACK: on some endpoints, the success key is only
+	// present on OK response codes, if the response code
+	// is good then just assume the value is true
+	if _, ok := raw["success"]; !ok {
+		if res.StatusCode >= 200 && res.StatusCode <= 300 {
+			raw["success"] = true
+		}
+	}
+
+	bytes, err = json.Marshal(raw)
+	if err != nil {
+		return nil, err
 	}
 
 	msg := json.RawMessage(bytes)
@@ -371,7 +384,7 @@ func (client *Client) ModifyServer(req ModifyServerRequest) (*Response, error) {
 		return nil, err
 	}
 
-	// conver to map[string]string skipping nil pointers
+	// convert to map[string]string skipping nil pointers
 	body := map[string]string{}
 	for key, elem := range rawBody {
 		val := reflect.ValueOf(elem)
@@ -390,6 +403,20 @@ func (client *Client) ModifyServer(req ModifyServerRequest) (*Response, error) {
 	}
 
 	var res Response
+	if err := json.Unmarshal(*raw, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (client *Client) GetServerStatus(server string) (*GetServerStatusResponse, error) {
+	raw, err := client.post("deploy/status", map[string]string{"server": server}, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var res GetServerStatusResponse
 	if err := json.Unmarshal(*raw, &res); err != nil {
 		return nil, err
 	}

@@ -77,6 +77,12 @@ var (
 		RunE:    modifyServer,
 		PostRun: logAction("success"),
 	}
+	statusCmd = &cobra.Command{
+		Use:   "status server_id",
+		Short: "Get server status",
+		Args:  cobra.ExactArgs(1),
+		RunE:  serverStatus,
+	}
 )
 
 func init() {
@@ -114,6 +120,8 @@ func init() {
 	modifyCmd.Flags().Int("vcpus", 2, "Number of vCPUs that you would like")
 	modifyCmd.Flags().Int("storage", 20, "Number of GB of networked storage")
 	modifyCmd.Flags().Int("ram", 4, "Number of GB of RAM to be deployed.")
+
+	serversCmd.AddCommand(statusCmd)
 
 	rootCmd.AddCommand(serversCmd)
 }
@@ -455,6 +463,22 @@ func modifyServer(cmd *cobra.Command, args []string) error {
 	if !res.Success {
 		return errors.New(res.Error)
 	}
+
+	return nil
+}
+
+func serverStatus(cmd *cobra.Command, args []string) error {
+	server := args[0]
+	res, err := client.GetServerStatus(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return errors.New(res.Error)
+	}
+
+	fmt.Println(res.Status)
 
 	return nil
 }
