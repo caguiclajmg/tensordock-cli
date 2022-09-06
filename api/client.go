@@ -16,6 +16,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+var CLIENT_VERSION = "0.7.1"
+
 type Response struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error"`
@@ -197,7 +199,10 @@ func (client *Client) get(path string, params map[string]string, auth bool) (*js
 		newParams[key] = elem
 	}
 
-	return client.do(http.MethodGet, path, newParams, nil, nil)
+	headers := map[string]string{}
+	headers["User-Agent"] = fmt.Sprintf("tensordock-cli/%v", CLIENT_VERSION)
+
+	return client.do(http.MethodGet, path, newParams, headers, nil)
 }
 
 func (client *Client) post(path string, body map[string]string, auth bool) (*json.RawMessage, error) {
@@ -212,11 +217,15 @@ func (client *Client) post(path string, body map[string]string, auth bool) (*jso
 		newBody.Add(key, elem)
 	}
 
+	headers := map[string]string{}
+	headers["User-Agent"] = fmt.Sprintf("tensordock-cli/%v", CLIENT_VERSION)
+	headers["Content-Type"] = "application/x-www-form-urlencoded"
+
 	return client.do(
 		http.MethodPost,
 		path,
 		nil,
-		map[string]string{"Content-Type": "application/x-www-form-urlencoded"},
+		headers,
 		[]byte(newBody.Encode()),
 	)
 }
