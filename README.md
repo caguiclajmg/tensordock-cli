@@ -62,6 +62,12 @@ tensordock-cli servers delete server_id
 tensordock-cli servers manage server_id
 ```
 
+### Launch an SSH session with a server
+
+```sh
+tensordock-cli servers ssh server_id
+```
+
 ### Deploy a server
 
 ```sh
