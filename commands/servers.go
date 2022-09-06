@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/caguiclajmg/tensordock-cli/api"
@@ -63,6 +64,12 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE:  manageServer,
 	}
+	sshCmd = &cobra.Command{
+		Use:   "ssh server_id",
+		Short: "Launch an SSH sesion with a server",
+		Args:  cobra.ExactArgs(1),
+		RunE:  sshServer,
+	}
 	restartCmd = &cobra.Command{
 		Use:     "restart [flags] server_id",
 		Short:   "Restart a server",
@@ -109,6 +116,11 @@ func init() {
 	deployCmd.Flags().String("os", "Ubuntu 20.04 LTS", "Operating system")
 
 	serversCmd.AddCommand(manageCmd)
+
+	serversCmd.AddCommand(sshCmd)
+	sshCmd.Flags().String("bin", "ssh", "Name of SSH client executable (e.g. ssh, mosh)")
+	sshCmd.Flags().String("user", "user", "User account to use for login")
+	sshCmd.Flags().String("extraFlags", "", "Extra flags to pass to the SSH client")
 
 	serversCmd.AddCommand(restartCmd)
 
@@ -340,6 +352,46 @@ func manageServer(cmd *cobra.Command, args []string) error {
 
 	err = browser.OpenURL(res.Server.Links["dashboard"]["href"])
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func sshServer(cmd *cobra.Command, args []string) error {
+	flags := cmd.Flags()
+
+	server := args[0]
+	res, err := client.GetServer(server)
+	if err != nil {
+		return err
+	}
+
+	if !res.Success {
+		return errors.New(res.Error)
+	}
+
+	bin, err := flags.GetString("bin")
+	if err != nil {
+		return err
+	}
+
+	user, err := flags.GetString("user")
+	if err != nil {
+		return err
+	}
+
+	extraFlags, err := flags.GetString("extraFlags")
+	if err != nil {
+		return err
+	}
+
+	sshCmd := exec.Command(bin, fmt.Sprintf("%v@%v", user, res.Server.Ip), extraFlags)
+	sshCmd.Stdin = os.Stdin
+	sshCmd.Stdout = os.Stdout
+	sshCmd.Stderr = os.Stderr
+
+	if err := sshCmd.Run(); err != nil {
 		return err
 	}
 
