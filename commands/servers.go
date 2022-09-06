@@ -58,7 +58,7 @@ var (
 		PostRun: logAction("success"),
 	}
 	manageCmd = &cobra.Command{
-		Use:   "manage [flags] server_id",
+		Use:   "manage server_id",
 		Short: "Open server management panel in a browser",
 		Args:  cobra.ExactArgs(1),
 		RunE:  manageServer,
