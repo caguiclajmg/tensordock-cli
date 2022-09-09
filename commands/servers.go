@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"strconv"
+
+	"golang.org/x/crypto/ssh"
 
 	"github.com/caguiclajmg/tensordock-cli/api"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -67,7 +69,7 @@ var (
 	sshCmd = &cobra.Command{
 		Use:   "ssh server_id",
 		Short: "Launch an SSH sesion with a server",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE:  sshServer,
 	}
 	restartCmd = &cobra.Command{
@@ -118,9 +120,9 @@ func init() {
 	serversCmd.AddCommand(manageCmd)
 
 	serversCmd.AddCommand(sshCmd)
-	sshCmd.Flags().String("bin", "ssh", "Name of SSH client executable (e.g. ssh, mosh)")
-	sshCmd.Flags().String("user", "user", "User account to use for login")
-	sshCmd.Flags().String("extraFlags", "", "Extra flags to pass to the SSH client")
+	sshCmd.Flags().Uint16("port", 22, "SSH port")
+	sshCmd.Flags().String("user", "user", "Username")
+	sshCmd.Flags().String("password", "", "Password")
 
 	serversCmd.AddCommand(restartCmd)
 
@@ -371,29 +373,86 @@ func sshServer(cmd *cobra.Command, args []string) error {
 		return errors.New(res.Error)
 	}
 
-	bin, err := flags.GetString("bin")
-	if err != nil {
-		return err
-	}
-
 	user, err := flags.GetString("user")
 	if err != nil {
 		return err
 	}
 
-	extraFlags, err := flags.GetString("extraFlags")
+	port, err := flags.GetUint16("port")
 	if err != nil {
 		return err
 	}
 
-	sshCmd := exec.Command(bin, fmt.Sprintf("%v@%v", user, res.Server.Ip), extraFlags)
-	sshCmd.Stdin = os.Stdin
-	sshCmd.Stdout = os.Stdout
-	sshCmd.Stderr = os.Stderr
+	password := ""
+	if flags.Changed("password") {
+		password, err = flags.GetString("password")
+		if err != nil {
+			return err
+		}
+	} else {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Password:")
+		password, err = reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+	}
 
-	if err := sshCmd.Run(); err != nil {
+	hostKeyCallback := ssh.InsecureIgnoreHostKey()
+	if err != nil {
 		return err
 	}
+
+	cfg := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(password),
+		},
+		HostKeyCallback: hostKeyCallback,
+	}
+	con, err := ssh.Dial("tcp", fmt.Sprintf("%v:%v", res.Server.Ip, port), cfg)
+	if err != nil {
+		return err
+	}
+
+	session, err := con.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	if len(args) > 1 {
+		session.Stdout = os.Stdout
+		session.Run(args[1])
+	} else {
+		session.Stdout = os.Stdout
+		session.Stderr = os.Stderr
+		in, err := session.StdinPipe()
+		if err != nil {
+			return err
+		}
+
+		modes := ssh.TerminalModes{
+			ssh.ECHO:          0,
+			ssh.TTY_OP_ISPEED: 14400,
+			ssh.TTY_OP_OSPEED: 14400,
+		}
+		if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+			return err
+		}
+
+		if err := session.Shell(); err != nil {
+			return err
+		}
+
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			str, _ := reader.ReadString('\n')
+			fmt.Fprint(in, str)
+		}
+	}
+
+	defer con.Close()
 
 	return nil
 }
